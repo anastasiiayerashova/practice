@@ -1,5 +1,10 @@
 // import { createSlice } from "@reduxjs/toolkit";
 
+import { createAction, createSlice } from "@reduxjs/toolkit";
+import { fetchTasks } from "./operations";
+import { addTask } from "./operations";
+import { deleteTask } from "./operations";
+
 // const slice = createSlice({
 //     name: 'tasks',
 //     initialState: {
@@ -31,3 +36,70 @@
 
 // export const { addTask, deleteTask, toggleCompleted } = slice.actions
 // export default slice.reducer
+
+// const tasksSlice = createSlice({
+//     name: 'tasks',
+//     initialState: {
+//         items: [],
+//         isLoading: false,
+//         error: null,
+//     },
+//     reducers: {
+//         fetchInProgress(state) {
+//             state.isLoading = true
+//         },
+//         fetchInSuccess(state, action) {
+//             state.isLoading = false
+//             state.items = action.payload
+//             state.error = null
+//         },
+//         fetchError(state, action) {
+//             state.error = action.payload
+//         }
+//     }
+// })
+
+const handlePending = (state) => {
+    state.isLoading = true
+}
+
+const handleRejected = (state, action) => {
+    state.isLoading = false
+    state.error = action.payload
+}
+
+const tasksSlice = createSlice({
+     name: 'tasks',
+     initialState: {
+         items: [],
+         isLoading: false,
+        error: null,
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchTasks.pending, handlePending)
+            .addCase(fetchTasks.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.items = action.payload
+                state.error = null
+            })
+            .addCase(fetchTasks.rejected, handleRejected)
+        .addCase(addTask.pending, handlePending)
+            .addCase(addTask.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.items.push(action.payload)
+                state.error = null
+            })
+            .addCase(addTask.rejected, handleRejected)
+        .addCase(deleteTask.pending, handlePending)
+            .addCase(deleteTask.fulfilled, (state, action) => {
+                state.isLoading = false
+                state.items = state.items.filter(item => item.id !== action.payload.id)
+                state.error = null
+            })
+            .addCase(deleteTask.rejected, handleRejected)
+    }
+})
+
+export default tasksSlice.reducer
+// export const {fetchInProgress, fetchInSuccess, fetchError} = tasksSlice.actions
